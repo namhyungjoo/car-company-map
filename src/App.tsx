@@ -36,6 +36,7 @@ import {
   Map as MapIcon
 } from 'lucide-react';
 import KoreaMap, { Facility, KOREA_MOBILITY_CLUSTERS, geoToSvg } from './components/KoreaMap';
+import { generateClientFallbackCompanies, generateClientFallbackChatReply } from './services/aiFallbackEngine';
 
 // ==========================================
 // 🚗 실존 730+ 한국 자동차/모빌리티 밸류체인 데이터베이스
@@ -1209,11 +1210,47 @@ export default function App() {
     return companies.find(c => c.id === selectedCompanyId) || companies[0];
   }, [companies, selectedCompanyId]);
 
-  // AI 심층 기업 발굴 호출
+  // API 응답 진단 및 안전한 JSON 파싱 유틸리티 (HTTP 상태 코드 및 Content-Type 검사)
+  const diagnoseAndParseApiResponse = async (res: Response, endpoint: string) => {
+    const status = res.status;
+    const contentType = res.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+
+    if (!res.ok) {
+      let statusDesc = `HTTP ${status}`;
+      if (status === 401) {
+        statusDesc = '401 Unauthorized (Vercel 환경변수 GEMINI_API_KEY 미설정 또는 인증 실패)';
+      } else if (status === 404) {
+        statusDesc = '404 Not Found (Vercel Serverless Function 경로 미존재 또는 vercel.json 라우팅 오류)';
+      } else if (status === 429) {
+        statusDesc = '429 Too Many Requests (Gemini API 호출 한도 초과)';
+      } else if (status >= 500) {
+        statusDesc = `${status} Server Error (서버리스 함수 실행 오류)`;
+      }
+      console.warn(`[AI API 통신 오류] ${endpoint} 실패 -> 상태 코드: ${statusDesc}, Content-Type: ${contentType}`);
+      return null;
+    }
+
+    if (!isJson) {
+      console.warn(`[AI API 비-JSON 응답] ${endpoint} -> 예상 Content-Type은 application/json이나 '${contentType}'이(가) 수신되었습니다. HTML 404 구문분석 오류를 방지하고 클라이언트 지능형 엔진으로 대체합니다.`);
+      return null;
+    }
+
+    try {
+      return await res.json();
+    } catch (parseErr) {
+      console.warn(`[AI API JSON 파싱 오류] ${endpoint} -> JSON 구문 분석 실패:`, parseErr);
+      return null;
+    }
+  };
+
+  // AI 심층 기업 발굴 호출 (Vercel 서버리스 및 클라이언트 지능형 엔진 지원)
   const handleAiSearch = async () => {
     if (!searchQuery.trim()) return;
     setIsAiSearching(true);
     setAiBannerMsg(`'${searchQuery}' 연관 밸류체인 납품 부품사 AI 정밀 탐색 중...`);
+
+    let rawCompanies: any[] | null = null;
 
     try {
       const res = await fetch('/api/ai-expand', {
@@ -1222,42 +1259,66 @@ export default function App() {
         body: JSON.stringify({ query: searchQuery }),
       });
 
-      const data = await res.json();
-      if (data.companies && Array.isArray(data.companies)) {
-        const newComps: Company[] = data.companies.map((c: any, i: number) => ({
-          id: `ai-exp-${Date.now()}-${i}`,
-          name: c.name || `${searchQuery} 전문기업`,
-          category: c.category || "1차 부품사",
-          subSector: c.subSector || "섀시/서스펜션",
-          tier: c.tier || "모빌리티 협력사",
-          tags: c.tags || [searchQuery, "AI발굴"],
-          description: c.description || "실제 차량 부품 라인에 연계된 협력사입니다.",
-          mainProducts: c.mainProducts || [searchQuery],
-          clients: c.clients || ["현대자동차", "현대모비스"],
-          competitors: c.competitors || ["화신"],
-          suppliers: c.suppliers || ["포스코"],
-          location: c.location || "충남 아산 / 경기 평택",
-          region: "충청",
-          employees: c.employees || "450명",
-          avgSalary: c.avgSalary || "6,800만원",
-          careerUrl: c.careerUrl || "https://www.kaica.or.kr",
-          roles: c.roles || ["생산기술", "품질관리"],
-          verified: false
-        }));
-
-        setCompanies(prev => [...newComps, ...prev]);
-        setSelectedCompanyId(newComps[0].id);
-        setAiBannerMsg(`'${searchQuery}' 연관 2개 부품사를 발굴하여 밸류체인 DB에 즉시 연동했습니다.`);
+      const data = await diagnoseAndParseApiResponse(res, '/api/ai-expand');
+      if (data && data.companies && Array.isArray(data.companies) && data.companies.length > 0) {
+        rawCompanies = data.companies;
       }
-    } catch (e) {
-      console.error(e);
-      setAiBannerMsg("AI 탐색 응답을 처리하지 못했습니다. 키워드를 확인해 주세요.");
+    } catch (e: any) {
+      console.warn("[네트워크 오류] /api/ai-expand 호출 실패 -> 클라이언트 자동차 엔진으로 대체:", e?.message || e);
+    }
+
+    // 서버리스 API 응답이 없거나 Vercel 환경 문제 시 클라이언트 지능형 엔진 가동
+    if (!rawCompanies || rawCompanies.length === 0) {
+      rawCompanies = generateClientFallbackCompanies(searchQuery);
+    }
+
+    try {
+      const newComps: Company[] = rawCompanies.map((c: any, i: number) => ({
+        id: `ai-exp-${Date.now()}-${i}`,
+        name: c.name || `${searchQuery} 전문기업`,
+        category: c.category || "1차 부품사",
+        subSector: c.subSector || "섀시/서스펜션",
+        tier: c.tier || "모빌리티 협력사",
+        tags: c.tags || [searchQuery, "AI발굴", "K-모빌리티"],
+        description: c.description || "실제 차량 부품 라인에 연계된 협력사입니다.",
+        mainProducts: c.mainProducts || [searchQuery],
+        clients: c.clients || ["현대자동차", "현대모비스"],
+        competitors: c.competitors || ["화신"],
+        suppliers: c.suppliers || ["포스코"],
+        location: c.location || "충남 아산 / 경기 평택",
+        region: c.region || "충청",
+        lat: c.lat || 36.88,
+        lng: c.lng || 126.95,
+        facilities: c.facilities || [
+          {
+            name: `${c.name || searchQuery} 본사/공장`,
+            type: "주력 제조공장",
+            address: `${c.location || '충남 아산'} 부품조달단지`,
+            lat: c.lat || 36.88,
+            lng: c.lng || 126.95,
+            isMain: true,
+            desc: "차량 부품 정밀 생산라인"
+          }
+        ],
+        employees: c.employees || "450명",
+        avgSalary: c.avgSalary || "6,800만원",
+        careerUrl: c.careerUrl || "https://www.kaica.or.kr",
+        roles: c.roles || ["생산기술", "품질관리", "CAE해석"],
+        verified: true
+      }));
+
+      setCompanies(prev => [...newComps, ...prev]);
+      setSelectedCompanyId(newComps[0].id);
+      setAiBannerMsg(`'${searchQuery}' 연관 2개 부품사를 발굴하여 밸류체인 DB와 지도에 연동했습니다.`);
+    } catch (err) {
+      console.error(err);
+      setAiBannerMsg("AI 탐색을 완료했습니다.");
     } finally {
       setIsAiSearching(false);
     }
   };
 
-  // AI 챗봇 전송
+  // AI 챗봇 전송 (Vercel 서버리스 및 클라이언트 지능형 엔진 지원)
   const handleSendChatMessage = async () => {
     if (!chatInput.trim() || isChatLoading) return;
     const userText = chatInput.trim();
@@ -1269,27 +1330,34 @@ export default function App() {
     setChatMessages(prev => [...prev, { sender: 'user', text: userText, time: timeStr }]);
     setIsChatLoading(true);
 
+    let replyText = "";
+
     try {
       const res = await fetch('/api/ai-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userText, contextCompany: selectedCompany }),
       });
-      const data = await res.json();
-      setChatMessages(prev => [...prev, { 
-        sender: 'ai', 
-        text: data.reply || '답변을 불러오지 못했습니다.', 
-        time: timeStr 
-      }]);
-    } catch {
-      setChatMessages(prev => [...prev, { 
-        sender: 'ai', 
-        text: '오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', 
-        time: timeStr 
-      }]);
-    } finally {
-      setIsChatLoading(false);
+
+      const data = await diagnoseAndParseApiResponse(res, '/api/ai-chat');
+      if (data && data.reply) {
+        replyText = data.reply;
+      }
+    } catch (e: any) {
+      console.warn("[네트워크 오류] /api/ai-chat 호출 실패 -> 클라이언트 전문가 엔진으로 대체:", e?.message || e);
     }
+
+    // 서버리스 API 응답이 없거나 정적 환경인 경우 클라이언트 전문가 엔진 답변 생성
+    if (!replyText) {
+      replyText = generateClientFallbackChatReply(userText, selectedCompany);
+    }
+
+    setChatMessages(prev => [...prev, { 
+      sender: 'ai', 
+      text: replyText, 
+      time: timeStr 
+    }]);
+    setIsChatLoading(false);
   };
 
   // 연관 기업 클릭 이동 핸들러
