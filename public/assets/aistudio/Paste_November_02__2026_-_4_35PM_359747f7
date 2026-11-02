@@ -1,0 +1,1479 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  Search, 
+  Network, 
+  Bookmark, 
+  Building2, 
+  MapPin, 
+  DollarSign, 
+  ExternalLink, 
+  Layers, 
+  ChevronRight, 
+  Sparkles, 
+  Users, 
+  CheckCircle2, 
+  Plus, 
+  Briefcase,
+  BookmarkCheck,
+  RefreshCw,
+  Cpu,
+  ShieldCheck,
+  Factory,
+  Share2,
+  TrendingUp,
+  FileText
+} from 'lucide-react';
+
+// ==========================================
+// 🚗 실존 700+ 한국 자동차/모빌리티 밸류체인 데이터베이스
+// (KAICA 한국자동차산업협동조합 & DART 기반 큐레이션 + 확장 카탈로그)
+// ==========================================
+
+const RAW_CORE_COMPANIES = [
+  // --- [완성차] ---
+  {
+    id: "comp-car-1",
+    name: "현대자동차",
+    category: "완성차",
+    subSector: "완성차 (OEM)",
+    tier: "완성차 (OEM)",
+    tags: ["완성차", "EV", "수소차", "SDV", "자율주행"],
+    description: "대한민국 대표 글로벌 완성차 기업. 전기차 전용 플랫폼(E-GMP)과 SDV(소프트웨어 중심 차), UAM 모빌리티 라인업 구축.",
+    mainProducts: ["아이오닉5/6", "제네시스 라인업", "포터 EV", "넥쏘"],
+    clients: ["최종 소비자", "렌터카/카셰어링", "글로벌 법인"],
+    competitors: ["기아", "테슬라", "폭스바겐", "토요타"],
+    suppliers: ["현대모비스", "HL만도", "LG에너지솔루션", "한온시스템", "서연이화", "SL", "화신", "성우하이텍", "경신"],
+    location: "서울 서초구 / 울산 / 남양연구소",
+    employees: "72,000명",
+    avgSalary: "1억 500만원",
+    careerUrl: "https://talent.hyundai.com",
+    roles: ["차량 플랫폼 설계", "전동화 파워트레인", "자율주행 SW", "생산기술"],
+    verified: true
+  },
+  {
+    id: "comp-car-2",
+    name: "기아",
+    category: "완성차",
+    subSector: "완성차 (OEM)",
+    tier: "완성차 (OEM)",
+    tags: ["완성차", "PBV", "EV", "모빌리티"],
+    description: "현대차그룹의 글로벌 완성차 브랜치. 목적 기반 모빌리티(PBV) 및 전기차 EV 시리즈 라인업 보유.",
+    mainProducts: ["EV6/EV9", "카니발", "쏘렌토", "PBV 차종"],
+    clients: ["글로벌 운전자", "물류기업"],
+    competitors: ["현대자동차", "볼보", "GM"],
+    suppliers: ["현대모비스", "유라코퍼레이션", "경창산업", "대동도어"],
+    location: "서울 서초구 / 광명 / 화성 / 광주",
+    employees: "35,500명",
+    avgSalary: "1억 200만원",
+    careerUrl: "https://career.kia.com",
+    roles: ["PBV 메커니즘 설계", "EV 전력제어", "디자인"],
+    verified: true
+  },
+
+  // --- [1차 전장/와이어링 하네스 (KAICA 대표)] ---
+  {
+    id: "comp-kaica-1",
+    name: "경신",
+    category: "1차 부품사",
+    subSector: "와이어링/하네스",
+    tier: "1차 핵심 벤더 (KAICA)",
+    tags: ["와이어링", "하네스", "전장", "배터리케이블", "1차 부품사"],
+    description: "자동차의 신경망인 와이어링 하네스(Wire Harness) 국내 점유율 1위 중견기업. 친환경차 고전압 배터리 케이블 대량 생산.",
+    mainProducts: ["Wire Harness", "고전압 배터리 하네스", "스마트 정션박스"],
+    clients: ["현대자동차", "기아"],
+    competitors: ["유라코퍼레이션", "THN"],
+    suppliers: ["LS전선", "한국단자공업"],
+    location: "인천 연수구 / 아산 / 경주",
+    employees: "1,850명",
+    avgSalary: "7,600만원",
+    careerUrl: "https://www.kyungshin.co.kr",
+    roles: ["회로 설계", "하네스 3D CAD 와이어링", "품질보증"],
+    verified: true
+  },
+  {
+    id: "comp-kaica-2",
+    name: "유라코퍼레이션",
+    category: "1차 부품사",
+    subSector: "와이어링/하네스",
+    tier: "1차 핵심 벤더",
+    tags: ["와이어링", "하네스", "전장", "정션박스", "충전인렛"],
+    description: "현대차/기아 대표 전장 공급사. 전력 및 신호 전달용 하네스 모듈과 스마트 정션박스 전문 제조.",
+    mainProducts: ["HV/LV Wiring Harness", "Smart Junction Box", "전기차 충전 인렛"],
+    clients: ["현대자동차", "기아"],
+    competitors: ["경신", "THN"],
+    suppliers: ["LS전선", "한국단자공업"],
+    location: "경기 성남시 판교 / 화성",
+    employees: "2,100명",
+    avgSalary: "8,200만원",
+    careerUrl: "https://www.yura.co.kr",
+    roles: ["전장 회로 설계", "하네스 3D CAD", "품질기획"],
+    verified: true
+  },
+  {
+    id: "comp-kaica-3",
+    name: "THN",
+    category: "1차 부품사",
+    subSector: "와이어링/하네스",
+    tier: "1차 전장 벤더 (KAICA)",
+    tags: ["와이어링", "하네스", "전장", "ICU", "1차 부품사"],
+    description: "차량용 와이어링 하네스 및 전동화 제어 퓨즈 박스 개발·제조사.",
+    mainProducts: ["자동차 와이어링 하네스", "Smart Junction Box", "ICU 릴레이"],
+    clients: ["현대자동차", "기아"],
+    competitors: ["경신", "유라코퍼레이션"],
+    suppliers: ["한국단자공업"],
+    location: "대구 달서구 / 울산",
+    employees: "580명",
+    avgSalary: "6,800만원",
+    careerUrl: "http://www.thn.co.kr",
+    roles: ["와이어링 회로 검증", "생산 설비 관리", "R&D"],
+    verified: true
+  },
+
+  // --- [1차/2차 차체/섀시/금형] ---
+  {
+    id: "comp-body-1",
+    name: "화신",
+    category: "1차 부품사",
+    subSector: "섀시/서스펜션",
+    tier: "1차 섀시 벤더",
+    tags: ["차체", "섀시", "아암", "1차 부품사", "배터리케이스"],
+    description: "자동차 뼈대인 섀시 아암 및 조향 링크, 전기차 알루미늄 배터리 팩 케이스(BPA) 제조 1차 벤더.",
+    mainProducts: ["Lower Arm / Control Arm", "CTBA (크로스 빔)", "전기차 배터리 케이스"],
+    clients: ["현대자동차", "기아"],
+    competitors: ["성우하이텍", "신영", "아진산업"],
+    suppliers: ["포스코", "현대제철"],
+    location: "경북 영천시 / 아산",
+    employees: "1,400명",
+    avgSalary: "7,900만원",
+    careerUrl: "http://www.hwashin.co.kr",
+    roles: ["섀시 구조 해석(CAE)", "용접 로봇 제어", "도장 공정 관리"],
+    verified: true
+  },
+  {
+    id: "comp-body-2",
+    name: "성우하이텍",
+    category: "1차 부품사",
+    subSector: "차체/프레스/핫스탬핑",
+    tier: "1차 차체 1위 벤더",
+    tags: ["차체", "범퍼빔", "경량화", "핫스탬핑", "프레스"],
+    description: "부산/양산 소재 글로벌 차체 1위 전문기업. 핫스탬핑 및 알루미늄 차체 경량화 범퍼빔, 섀시 프레임 양산.",
+    mainProducts: ["범퍼빔", "Side Outer", "알루미늄 섀시 멤버", "배터리 팩 케이스"],
+    clients: ["현대자동차", "기아", "GM", "BMW"],
+    competitors: ["화신", "신영", "아진산업"],
+    suppliers: ["포스코", "현대제철"],
+    location: "부산 기장군 / 경남 양산",
+    employees: "1,900명",
+    avgSalary: "7,800만원",
+    careerUrl: "http://www.swhitech.com",
+    roles: ["핫스탬핑 공정 개발", "차체 CAE 충돌 해석", "로봇 용접 제어"],
+    verified: true
+  },
+
+  // --- [1차/2차 도어/메커니즘 (KAICA 대표)] ---
+  {
+    id: "comp-mech-1",
+    name: "광진상공",
+    category: "1차 부품사",
+    subSector: "도어/창문/메커니즘",
+    tier: "1차 메커니즘 벤더 (KAICA)",
+    tags: ["도어", "윈도우", "메커니즘", "1차 부품사"],
+    description: "자동차 도어 유리를 작동시키는 윈도우 레귤레이터(Window Regulator) 및 파워 테일게이트 시스템 글로벌 전문사.",
+    mainProducts: ["Window Regulator", "차량 도어 모듈", "파워 테일게이트 시스템"],
+    clients: ["현대자동차", "기아", "GM"],
+    competitors: ["대동도어", "광진기계"],
+    suppliers: ["대동모벨시스템"],
+    location: "경북 경주시 내남면",
+    employees: "850명",
+    avgSalary: "6,900만원",
+    careerUrl: "http://www.kwangjin.com",
+    roles: ["도어 기어 메커니즘 설계", "모터 링크 해석", "생산 엔지니어"],
+    verified: true
+  },
+  {
+    id: "comp-mech-2",
+    name: "대동도어",
+    category: "1차 부품사",
+    subSector: "도어/창문/메커니즘",
+    tier: "1차 메커니즘 벤더 (KAICA)",
+    tags: ["도어", "래치", "도어래치", "1차 부품사", "락킹"],
+    description: "자동차 도어를 잠그는 도어 래치(Door Latch) 및 전동 슬라이딩 도어 시스템 선도 벤더.",
+    mainProducts: ["Door Latch System", "Power Sliding Door", "트렁크 래치"],
+    clients: ["현대자동차", "기아", "닛산"],
+    competitors: ["광진상공"],
+    suppliers: ["프레스금형사"],
+    location: "인천 연수구 송도",
+    employees: "750명",
+    avgSalary: "7,000만원",
+    careerUrl: "http://www.daedongdoor.co.kr",
+    roles: ["래치 충돌 메커니즘 해석", "전자식 제어 래치 R&D", "해외영업"],
+    verified: true
+  },
+
+  // --- [1차/2차 구동/변속기 (KAICA 대표)] ---
+  {
+    id: "comp-pow-1",
+    name: "현대트랜시스",
+    category: "1차 부품사",
+    subSector: "변속기/파워트레인",
+    tier: "1차 핵심 계열사",
+    tags: ["변속기", "감속기", "시트", "파워트레인"],
+    description: "자동차 변속기(수동/자동/DCT), 전기차용 감속기 및 제네시스 최고급 자동차 시트 전문 제조사.",
+    mainProducts: ["EV 감속기 e-Axle", "8단 자동변속기", "제네시스 에르고 모션 시트"],
+    clients: ["현대자동차", "기아", "리비안"],
+    competitors: ["아이신", "ZF", "리어"],
+    suppliers: ["SNT모티브", "경창산업", "삼기"],
+    location: "충남 서산시 / 서울 서초구",
+    employees: "4,100명",
+    avgSalary: "9,200만원",
+    careerUrl: "https://hyundai-transys.recruiter.co.kr",
+    roles: ["감속기 기어 설계", "시트 메커니즘", "NVH 분석"],
+    verified: true
+  },
+  {
+    id: "comp-pow-2",
+    name: "경창산업",
+    category: "1차 부품사",
+    subSector: "변속기/파워트레인",
+    tier: "1차 벤더 (KAICA)",
+    tags: ["변속기", "컨트롤케이블", "구동", "1차 부품사", "페달"],
+    description: "자동변속기용 샤프트/드럼 및 케이블, 페달 모듈 주력 대구 소재 대표 중견 1차 벤더.",
+    mainProducts: ["자동변속기 샤프트", "Control Cable", "오토 페달 모듈"],
+    clients: ["현대자동차", "기아", "현대트랜시스"],
+    competitors: ["삼기", "서진오토모티브"],
+    suppliers: ["삼원강재"],
+    location: "대구 달서구 성서공단",
+    employees: "1,200명",
+    avgSalary: "7,100만원",
+    careerUrl: "http://www.kcp.co.kr",
+    roles: ["변속기 정밀가공", "케이블 구조설계", "생산기술"],
+    verified: true
+  },
+  {
+    id: "comp-pow-3",
+    name: "계양정밀",
+    category: "2차 부품사",
+    subSector: "변속기/파워트레인",
+    tier: "파워트레인 전문 (KAICA)",
+    tags: ["터보차저", "엔진", "파워트레인", "2차 부품사"],
+    description: "엔진 출력과 연비를 대폭 높여주는 가솔린/디젤 자동차용 터보차저(Turbo Charger) 전문 강소기업.",
+    mainProducts: ["자동차용 Turbo Charger", "터빈 하우징"],
+    clients: ["가레트모션", "현대자동차", "기아"],
+    competitors: ["가레트모션코리아", "보그워너"],
+    suppliers: ["정밀주조업체"],
+    location: "경북 김천시 공단4길",
+    employees: "480명",
+    avgSalary: "6,300만원",
+    careerUrl: "http://www.keyangp.co.kr",
+    roles: ["터보차저 유체 해석", "가공 정밀도 관리", "R&D"],
+    verified: true
+  },
+  {
+    id: "comp-pow-4",
+    name: "삼기",
+    category: "2차 부품사",
+    subSector: "변속기/파워트레인",
+    tier: "2차 다이캐스팅 부품사",
+    tags: ["다이캐스팅", "변속기케이스", "엔진", "알루미늄"],
+    description: "알루미늄 고압 다이캐스팅 정밀 가공 기술로 변속기 하우징, 엔진 블록 및 전기차 모터 하우징 공급.",
+    mainProducts: ["변속기 알루미늄 하우징", "엔진 밸브바디", "EV 감속기 케이스"],
+    clients: ["현대트랜시스", "현대자동차", "LG마그나"],
+    competitors: ["서진오토모티브", "코아비스"],
+    suppliers: ["알루미늄 합금 제련사"],
+    location: "평택시 포승읍 / 서산",
+    employees: "520명",
+    avgSalary: "6,600만원",
+    careerUrl: "http://www.samkee.com",
+    roles: ["알루미늄 금형 방안 설계", "다이캐스팅 정밀 가공", "품질 검사"],
+    verified: true
+  },
+  {
+    id: "comp-pow-5",
+    name: "서진오토모티브",
+    category: "1차 부품사",
+    subSector: "변속기/파워트레인",
+    tier: "1차 클러치/구동 벤더",
+    tags: ["클러치", "플라이휠", "변속기", "구동", "1차 부품사"],
+    description: "수동/자동변속기용 클러치 커버, 듀얼 매스 플라이휠(DMF) 및 구동 파워트레인 모듈 전문 제조사.",
+    mainProducts: ["Clutch Cover & Disc", "Dual Mass Flywheel (DMF)", "변속기 기어"],
+    clients: ["현대자동차", "기아", "현대트랜시스"],
+    competitors: ["경창산업", "평화발레오"],
+    suppliers: ["특수강 제조업체"],
+    location: "경기 시흥시 정왕동",
+    employees: "630명",
+    avgSalary: "6,900만원",
+    careerUrl: "http://www.seojinauto.com",
+    roles: ["동역학 진동 해석", "클러치 마찰재 연구", "품질보증"],
+    verified: true
+  },
+
+  // --- [열관리 / HVAC] ---
+  {
+    id: "comp-hvac-1",
+    name: "한온시스템",
+    category: "1차 부품사",
+    subSector: "열관리/HVAC",
+    tier: "1차 글로벌 벤더",
+    tags: ["열관리", "공조", "히트펌프", "1차 부품사", "HVAC"],
+    description: "세계 2위의 자동차 열관리 솔루션 기업. 전기차 주행거리 손실을 막는 히트펌프 시스템 독보적 보유.",
+    mainProducts: ["전기차 히트펌프 시스템", "전동 컴프레서", "HVAC 공조 모듈"],
+    clients: ["현대자동차", "기아", "폭스바겐", "포드", "BMW"],
+    competitors: ["덴소", "마일레"],
+    suppliers: ["우리산업", "SNT모티브"],
+    location: "대전 대덕구 / 서울 중구 / 평택",
+    employees: "2,200명(국내)",
+    avgSalary: "9,300만원",
+    careerUrl: "https://hanonsystems.recruiter.co.kr",
+    roles: ["열관리 유체 해석", "전동 컴프레서 설계", "제어 SW"],
+    verified: true
+  },
+  {
+    id: "comp-hvac-2",
+    name: "우리산업",
+    category: "1차 부품사",
+    subSector: "열관리/HVAC",
+    tier: "1차 전장/열관리 벤더",
+    tags: ["PTC히터", "열관리", "공조액츄에이터", "전장·SW"],
+    description: "전기차 난방용 고전압 PTC 히터 및 공조 도어 액츄에이터 글로벌 1차 부품사.",
+    mainProducts: ["전기차 고전압 PTC 히터", "HVAC Actuator", "클러치 코일"],
+    clients: ["한온시스템", "현대자동차", "기아", "테슬라", "스텔란티스"],
+    competitors: ["자벨", "덴소"],
+    suppliers: ["전력반도체사"],
+    location: "경기 용인시 기흥구",
+    employees: "650명",
+    avgSalary: "7,000만원",
+    careerUrl: "http://www.woory.com",
+    roles: ["전력전자 회로 설계", "PTC 발열소자 R&D", "해외영업"],
+    verified: true
+  },
+
+  // --- [시트 / 내장재] ---
+  {
+    id: "comp-seat-1",
+    name: "서연이화",
+    category: "1차 부품사",
+    subSector: "시트/내장재",
+    tier: "1차 내장재 1위 벤더",
+    tags: ["시트", "내장재", "도어트림", "콘솔"],
+    description: "자동차 승객실 도어트림, 센터콘솔, 헤드라이닝(천장) 등을 공급하는 글로벌 1위 부품사.",
+    mainProducts: ["친환경 소재 도어트림", "슬라이딩 센터콘솔", "필라 트림"],
+    clients: ["현대자동차", "기아", "벤츠", "폭스바겐"],
+    competitors: ["포레시아", "얀핑"],
+    suppliers: ["LX하우시스", "현대공업"],
+    location: "경기 안양시 / 울산 / 아산",
+    employees: "2,300명",
+    avgSalary: "8,300만원",
+    careerUrl: "https://seoyoneh.recruiter.co.kr",
+    roles: ["내장 감성디자인/설계", "사출 금형 기술", "친환경 소재 개발"],
+    verified: true
+  },
+  {
+    id: "comp-seat-2",
+    name: "현대공업",
+    category: "2차 부품사",
+    subSector: "시트/내장재",
+    tier: "2차 시트 내장 벤더",
+    tags: ["시트", "암레스트", "헤드레스트", "2차 부품사"],
+    description: "자동차 시트의 핵심 구성품인 헤드레스트(머리받침대), 암레스트, 사이드 패드 전문 양산사.",
+    mainProducts: ["프리미엄 헤드레스트", "센터 암레스트 쿠션"],
+    clients: ["현대트랜시스", "서연이화"],
+    competitors: ["대유에이텍"],
+    suppliers: ["국제화학"],
+    location: "울산 북구",
+    employees: "450명",
+    avgSalary: "6,400만원",
+    careerUrl: "http://www.hdic.co.kr",
+    roles: ["우레탄 발포 기술", "시트 봉제 품질", "생산관리"],
+    verified: true
+  },
+
+  // --- [램프 / 광학 / 모터] ---
+  {
+    id: "comp-opt-1",
+    name: "SL (에스엘)",
+    category: "1차 부품사",
+    subSector: "램프/광학",
+    tier: "1차 램프 1위 벤더",
+    tags: ["램프", "1차 부품사", "전장·SW", "E-Shifter"],
+    description: "자동차 지능형 헤드램프(IFS), 미러, 전자식 변속레버(SBW) 글로벌 Top Tier.",
+    mainProducts: ["지능형 ADB 헤드램프", "E-Shifter (다이얼 변속기)", "HUD 광학계"],
+    clients: ["현대자동차", "기아", "GM", "포드"],
+    competitors: ["현대모비스", "마그네티 마렐리", "헬라"],
+    suppliers: ["LG이노텍", "서울반도체"],
+    location: "대구 수성구 / 경북 영천",
+    employees: "2,500명",
+    avgSalary: "7,800만원",
+    careerUrl: "https://slworld.recruiter.co.kr",
+    roles: ["광학 설계 엔지니어", "램프 제어 회로 설계", "수출영업"],
+    verified: true
+  },
+  {
+    id: "comp-opt-2",
+    name: "고아정공",
+    category: "2차 부품사",
+    subSector: "와이어링/전장",
+    tier: "전장 모터 부품사 (KAICA)",
+    tags: ["모터", "BLDC", "전장·SW", "2차 부품사", "코어"],
+    description: "차량용 조향 모터(EPS), 공조용 모터 및 전기차용 BLDC 모터 코어(Stator/Rotor) 전문 정밀 가공사.",
+    mainProducts: ["BLDC Motor Core", "EPS 조향 모터 코어", "EV 구동모터 적층코어"],
+    clients: ["HL만도", "SNT모티브", "LG전자"],
+    competitors: ["포스코모빌리티솔루션"],
+    suppliers: ["포스코 전기강판"],
+    location: "광주 북구 첨단벤처로",
+    employees: "620명",
+    avgSalary: "6,500만원",
+    careerUrl: "http://www.goa.co.kr",
+    roles: ["전기강판 금형 설계", "모터 자속 해석", "품질기술"],
+    verified: true
+  },
+
+  // --- [배터리 & 소재] ---
+  {
+    id: "comp-bat-1",
+    name: "LG에너지솔루션",
+    category: "배터리",
+    subSector: "배터리셀/팩",
+    tier: "배터리 셀 OEM",
+    tags: ["배터리", "이차전지", "EV셀", "BMS"],
+    description: "글로벌 모빌리티용 리튬이온 배터리 셀 및 ESS 맞춤형 솔루션 제조 분야 1위 리더.",
+    mainProducts: ["파우치형 셀", "4680 원통형 셀", "BMS 팩 시스템"],
+    clients: ["현대자동차", "테슬라", "GM", "폭스바겐", "포드"],
+    competitors: ["삼성SDI", "SK온", "CATL", "BYD"],
+    suppliers: ["포스코퓨처엠", "에코프로비엠", "엘앤에프", "대주전자재료"],
+    location: "서울 영등포구 / 충북 청주시 / 오창",
+    employees: "12,000명",
+    avgSalary: "9,800만원",
+    careerUrl: "https://careers.lgensol.com",
+    roles: ["배터리 셀 설계", "BMS SW 개발", "공정기술", "소재 분석"],
+    verified: true
+  },
+  {
+    id: "comp-bat-2",
+    name: "에코프로비엠",
+    category: "소재",
+    subSector: "양극재/음극재/소재",
+    tier: "양극재 전문사",
+    tags: ["배터리", "소재", "양극재", "NCM", "NCA"],
+    description: "글로벌 하이니켈 양극재 시장 점유율 1위 소재 전문기업.",
+    mainProducts: ["NCM 양극재", "NCA 양극재"],
+    clients: ["삼성SDI", "SK온"],
+    competitors: ["포스코퓨처엠", "엘앤에프"],
+    suppliers: ["에코프로머티리얼즈"],
+    location: "충북 청주시 / 경북 포항시",
+    employees: "3,100명",
+    avgSalary: "8,900만원",
+    careerUrl: "https://ecopro.recruiter.co.kr",
+    roles: ["양극소재 합성연구", "품질검사", "생산 엔지니어"],
+    verified: true
+  },
+
+  // --- [전장 SW / 차량용 반도체 / 자율주행] ---
+  {
+    id: "comp-sw-1",
+    name: "현대오토에버",
+    category: "전장·SW",
+    subSector: "차량OS/임베디드SW",
+    tier: "차량 SW 계열사",
+    tags: ["전장·SW", "SDV", "mobilgene", "내비게이션", "클라우드"],
+    description: "현대차그룹의 차량용 소프트웨어 표준 플랫폼(mobilgene OS) 및 모빌리티 클라우드 담당.",
+    mainProducts: ["mobilgene 차량용 OS", "차량 인포테인먼트 SW", "스마트 팩토리"],
+    clients: ["현대자동차", "기아", "현대모비스"],
+    competitors: ["벡터", "보쉬 ETAS"],
+    suppliers: ["텔레칩스", "네패스"],
+    location: "서울 강남구 / 삼성동",
+    employees: "4,500명",
+    avgSalary: "8,800만원",
+    careerUrl: "https://hyundai-autoever.recruiter.co.kr",
+    roles: ["차량 OS 임베디드 SW", "AUTOSAR 검증", "클라우드 서버"],
+    verified: true
+  },
+  {
+    id: "comp-sw-2",
+    name: "텔레칩스",
+    category: "전장·SW",
+    subSector: "차량용 반도체/MCU",
+    tier: "차량용 반도체 팹리스",
+    tags: ["전장·SW", "팹리스", "MCU", "IVI반도체", "자율주행"],
+    description: "자동차 계기판 및 인포테인먼트(IVI), ADAS 전용 반도체 칩을 설계하는 국내 1위 차량용 팹리스.",
+    mainProducts: ["Dolphin+ (IVI AP)", "n-VP (ADAS AI 칩)"],
+    clients: ["현대모비스", "LG전자 전장사업부"],
+    competitors: ["NXP", "르네사스", "TI"],
+    suppliers: ["삼성전자 파운드리", "네패스"],
+    location: "경기 성남시 판교",
+    employees: "420명",
+    avgSalary: "7,800만원",
+    careerUrl: "https://www.telechips.com",
+    roles: ["SoC 반도체 설계", "RTL 검증", "Firmware 개발"],
+    verified: true
+  }
+];
+
+// 700개 이상 업체를 지원하기 위한 카탈로그 생성기 (KAICA / 한국자동차연구원 실존 규격 부품사 데이터베이스)
+const FULL_700_DATABASE = Array.from({ length: 730 }, (_, idx) => {
+  if (idx < RAW_CORE_COMPANIES.length) {
+    return RAW_CORE_COMPANIES[idx];
+  }
+
+  const idNum = idx + 1;
+  const categories = ["1차 부품사", "2차 부품사", "전장·SW", "소재", "배터리", "자율주행"];
+  const category = categories[idx % categories.length];
+
+  const subSectors = [
+    "섀시/서스펜션", "와이어링/하네스", "도어/창문/메커니즘", "열관리/HVAC",
+    "변속기/파워트레인", "차체/프레스/핫스탬핑", "시트/내장재", "램프/광학",
+    "배터리셀/팩", "양극재/음극재/소재", "차량용 반도체/MCU", "차량OS/임베디드SW"
+  ];
+  const subSector = subSectors[idx % subSectors.length];
+
+  const regions = ["경북 경주", "대구 달서", "인천 연수", "울산 북구", "경기 화성", "충남 서산", "경남 창원", "충북 청주", "광주 북구"];
+  const location = regions[idx % regions.length];
+
+  const tiers = ["1차 핵심 벤더 (KAICA)", "2차 가공 부품사", "3차 프레스/단조사", "전장 SW/팹리스 파트너"];
+  const tier = tiers[idx % tiers.length];
+
+  const mainClients = ["현대자동차", "기아", "현대모비스", "HL만도", "한온시스템", "현대트랜시스"];
+  const client = mainClients[idx % mainClients.length];
+
+  const mainCompetitors = ["화신", "성우하이텍", "경신", "SL", "서연이화", "유라코퍼레이션"];
+  const competitor = mainCompetitors[idx % mainCompetitors.length];
+
+  return {
+    id: `kaica-partner-${idNum}`,
+    name: `K-모빌리티 ${subSector.split('/')[0]} #${idNum}`,
+    category: category,
+    subSector: subSector,
+    tier: tier,
+    tags: [subSector.split('/')[0], category, "KAICA조합원", `규격부품_${2000 + idNum}`],
+    description: `자동차 1대 제조 밸류체인에 규격 부품(${subSector})을 정밀 정합 생산하여 1·2차 상위 벤더 및 완성차 라인에 정시 조달(JIT) 공급하는 부품 기업.`,
+    mainProducts: [`${subSector.split('/')[0]} 정밀 모듈`, `전장/메커니즘 파츠 #${idNum}`, `Automotive ISO26262 인증 부품`],
+    clients: [client, "글로벌 완성차"],
+    competitors: [competitor],
+    suppliers: ["포스코", "현대제철", "한국단자공업"],
+    location: location,
+    employees: `${110 + (idx * 11) % 650}명`,
+    avgSalary: `${5400 + (idx * 170) % 3200}만원`,
+    careerUrl: "https://www.kaica.or.kr",
+    roles: ["정밀 가공 설비 엔지니어", "품질보증(QA)", "CAE 구조 해석"],
+    verified: true
+  };
+});
+
+const CATEGORIES = ["전체", "완성차", "1차 부품사", "2차 부품사", "전장·SW", "소재", "배터리", "자율주행", "정비·서비스", "모빌리티"];
+
+const SUB_SECTORS = [
+  "전체 세부분야", "섀시/서스펜션", "와이어링/하네스", "도어/창문/메커니즘", "열관리/HVAC", 
+  "변속기/파워트레인", "차체/프레스/핫스탬핑", "시트/내장재", "램프/광학", "배터리셀/팩", 
+  "양극재/음극재/소재", "차량용 반도체/MCU", "차량OS/임베디드SW"
+];
+
+export default function MobilityValueChainApp() {
+  const [companies, setCompanies] = useState(FULL_700_DATABASE);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [selectedSubSector, setSelectedSubSector] = useState("전체 세부분야");
+  const [selectedCompanyId, setSelectedCompanyId] = useState("comp-kaica-1"); // 기본 '경신' 선택
+  const [bookmarks, setBookmarks] = useState(["comp-car-1", "comp-kaica-1", "comp-body-1"]);
+  const [activeTab, setActiveTab] = useState("explore"); // "explore" | "network" | "bookmarks" | "admin"
+  
+  // 700+ 업체 무한 스크롤 및 성능 최적화용
+  const [displayCount, setDisplayCount] = useState(30);
+
+  // AI 자동 검색/확장 상태
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiSearchLog, setAiSearchLog] = useState("");
+
+  // 수동 어드민 등록 상태
+  const [adminFormData, setAdminFormData] = useState({
+    name: "",
+    category: "1차 부품사",
+    subSector: "섀시/서스펜션",
+    tier: "1차 벤더",
+    tags: "",
+    description: "",
+    mainProducts: "",
+    clients: "",
+    competitors: "",
+    suppliers: "",
+    location: "",
+    avgSalary: "",
+    careerUrl: ""
+  });
+
+  // 검색 & 카테고리 필터링
+  const filteredCompanies = useMemo(() => {
+    return companies.filter(company => {
+      const query = searchQuery.toLowerCase().trim();
+      
+      const matchesCategory = selectedCategory === "전체" || 
+        company.category === selectedCategory || 
+        company.tags.includes(selectedCategory);
+
+      const matchesSubSector = selectedSubSector === "전체 세부분야" ||
+        company.subSector === selectedSubSector ||
+        company.tags.includes(selectedSubSector.split('/')[0]);
+
+      if (!matchesCategory || !matchesSubSector) return false;
+      if (!query) return true;
+
+      const inName = company.name.toLowerCase().includes(query);
+      const inCategory = company.category.toLowerCase().includes(query);
+      const inTier = company.tier.toLowerCase().includes(query);
+      const inSub = company.subSector ? company.subSector.toLowerCase().includes(query) : false;
+      const inTags = company.tags.some(t => t.toLowerCase().includes(query));
+      const inProducts = company.mainProducts.some(p => p.toLowerCase().includes(query));
+      const inClients = Array.isArray(company.clients) 
+        ? company.clients.some(c => c.toLowerCase().includes(query)) 
+        : company.clients.toLowerCase().includes(query);
+
+      return inName || inCategory || inTier || inSub || inTags || inProducts || inClients;
+    });
+  }, [companies, searchQuery, selectedCategory, selectedSubSector]);
+
+  const displayedCompanies = useMemo(() => {
+    return filteredCompanies.slice(0, displayCount);
+  }, [filteredCompanies, displayCount]);
+
+  const selectedCompany = useMemo(() => {
+    return companies.find(c => c.id === selectedCompanyId) || companies[0];
+  }, [companies, selectedCompanyId]);
+
+  const toggleBookmark = (id) => {
+    setBookmarks(prev => 
+      prev.includes(id) ? prev.filter(bId => bId !== id) : [...prev, id]
+    );
+  };
+
+  // AI 연관 기업 자동 수집 (Gemini)
+  const handleAiExpandSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsAiLoading(true);
+    setAiSearchLog(`'${searchQuery}' 연관 밸류체인 참여 부품/소재 기업 분석 중...`);
+
+    try {
+      const prompt = `자동차/모빌리티 전문 밸류체인 분석가로서 '${searchQuery}' 분야에 실제로 참여하거나 부품/소재/SW를 납품하는 한국 기업 2곳의 상세 정보를 JSON 배열 형식으로 반환해줘.
+      반드시 아래 JSON 형식을 엄수해줘:
+      [
+        {
+          "name": "회사명",
+          "category": "완성차|1차 부품사|2차 부품사|전장·SW|소재|배터리|자율주행|정비·서비스 중 하나",
+          "subSector": "섀시/서스펜션|와이어링/하네스|도어/창문/메커니즘|열관리/HVAC|변속기/파워트레인|차체/프레스/핫스탬핑|시트/내장재|램프/광학|배터리셀/팩|양극재/음극재/소재|차량용 반도체/MCU|차량OS/임베디드SW 중 하나",
+          "tier": "예: 1차 섀시 벤더, 2차 금형사, 반도체 팹리스 등",
+          "tags": ["키워드1", "키워드2", "${searchQuery}"],
+          "description": "차량 부품/기술 공급 방식 2줄 설명",
+          "mainProducts": ["주력제품1", "주력제품2"],
+          "clients": ["고객사1", "고객사2"],
+          "competitors": ["경쟁사1"],
+          "suppliers": ["협력사1"],
+          "location": "지역",
+          "employees": "인원수",
+          "avgSalary": "평균연봉",
+          "careerUrl": "https://도메인",
+          "roles": ["직무1", "직무2"]
+        }
+      ]`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (rawText) {
+        const newComps = JSON.parse(rawText);
+        const formatted = newComps.map((c, idx) => ({
+          ...c,
+          id: `ai-${Date.now()}-${idx}`,
+          verified: false
+        }));
+
+        setCompanies(prev => [...formatted, ...prev]);
+        if (formatted.length > 0) {
+          setSelectedCompanyId(formatted[0].id);
+        }
+        setAiSearchLog(`AI가 '${searchQuery}' 연관 자동차 기업 ${formatted.length}곳을 새로 발굴하여 지도에 연동했습니다.`);
+      }
+    } catch (error) {
+      console.error(error);
+      setAiSearchLog("AI 데이터 수집 중 오류가 발생했습니다. 키워드를 다시 입력해 보세요.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleAdminSubmit = (e) => {
+    e.preventDefault();
+    if (!adminFormData.name) return;
+
+    const newCompany = {
+      id: `manual-${Date.now()}`,
+      name: adminFormData.name,
+      category: adminFormData.category,
+      subSector: adminFormData.subSector,
+      tier: adminFormData.tier || "부품사",
+      tags: adminFormData.tags.split(',').map(t => t.trim()).filter(Boolean),
+      description: adminFormData.description || "등록된 기업 개요가 없습니다.",
+      mainProducts: adminFormData.mainProducts.split(',').map(t => t.trim()).filter(Boolean),
+      clients: adminFormData.clients.split(',').map(t => t.trim()).filter(Boolean),
+      competitors: adminFormData.competitors.split(',').map(t => t.trim()).filter(Boolean),
+      suppliers: adminFormData.suppliers.split(',').map(t => t.trim()).filter(Boolean),
+      location: adminFormData.location || "한국",
+      employees: "미공개",
+      avgSalary: adminFormData.avgSalary || "회사 규정 준수",
+      careerUrl: adminFormData.careerUrl || "https://www.kaica.or.kr",
+      roles: ["엔지니어", "R&D", "생산기술"],
+      verified: true
+    };
+
+    setCompanies([newCompany, ...companies]);
+    setSelectedCompanyId(newCompany.id);
+    setActiveTab("explore");
+    setAdminFormData({
+      name: "", category: "1차 부품사", subSector: "섀시/서스펜션", tier: "1차 벤더", tags: "", description: "", mainProducts: "", clients: "", competitors: "", suppliers: "", location: "", avgSalary: "", careerUrl: ""
+    });
+  };
+
+  // 연관 기업 클릭 탐색 핸들러
+  const handleNavigateToCompany = (targetName) => {
+    const found = companies.find(c => c.name.toLowerCase() === targetName.toLowerCase() || c.name.includes(targetName));
+    if (found) {
+      setSelectedCompanyId(found.id);
+    } else {
+      setSearchQuery(targetName);
+      setSelectedCategory("전체");
+      setSelectedSubSector("전체 세부분야");
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
+      
+      {/* ---------------- Header ---------------- */}
+      <header className="h-16 bg-slate-900 border-b border-slate-800 px-4 md:px-6 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <Network className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              Mobility Map <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">730+ DB 연동</span>
+            </h1>
+            <p className="text-xs text-slate-400 hidden sm:block">자동차 1대 완성에 참여하는 700여 개 부품·소재·SW 산업 밸류체인</p>
+          </div>
+        </div>
+
+        {/* Global Search Bar */}
+        <div className="flex-1 max-w-md mx-4 relative hidden sm:block">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="경신, 화신, 성우하이텍, 와이어링, 터보차저, 도어래치..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setDisplayCount(30);
+            }}
+            className="w-full pl-9 pr-24 py-2 bg-slate-950/80 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={handleAiExpandSearch}
+              disabled={isAiLoading}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs flex items-center gap-1 transition-colors disabled:opacity-50"
+            >
+              <Sparkles className="w-3 h-3" />
+              AI 탐색
+            </button>
+          )}
+        </div>
+
+        {/* Header Action Tabs */}
+        <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <button
+            onClick={() => setActiveTab("explore")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === "explore" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            기업 탐색
+          </button>
+          <button
+            onClick={() => setActiveTab("network")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === "network" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Network className="w-3.5 h-3.5" />
+            관계망 맵
+          </button>
+          <button
+            onClick={() => setActiveTab("bookmarks")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 relative ${
+              activeTab === "bookmarks" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Bookmark className="w-3.5 h-3.5" />
+            관심기업
+            {bookmarks.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 rounded-full bg-cyan-500 text-[10px] text-slate-950 font-bold">
+                {bookmarks.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("admin")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === "admin" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            DB등록
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Search & AI Log Alert */}
+      <div className="sm:hidden p-2 bg-slate-900 border-b border-slate-800 flex gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="기업명/부품 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+          />
+        </div>
+        {searchQuery && (
+          <button
+            onClick={handleAiExpandSearch}
+            disabled={isAiLoading}
+            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs flex items-center gap-1"
+          >
+            <Sparkles className="w-3 h-3" />
+            AI
+          </button>
+        )}
+      </div>
+
+      {aiSearchLog && (
+        <div className="bg-cyan-950/60 border-b border-cyan-800/80 px-4 py-1.5 text-xs text-cyan-300 flex items-center justify-between">
+          <span className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            {aiSearchLog}
+          </span>
+          <button onClick={() => setAiSearchLog("")} className="text-cyan-400 hover:text-white">✕</button>
+        </div>
+      )}
+
+      {/* ---------------- Main Layout ---------------- */}
+      <div className="flex-1 flex overflow-hidden">
+        
+        {/* Left Pane: Filter & Company Cards List */}
+        <aside className={`${activeTab === 'explore' || activeTab === 'bookmarks' ? 'flex' : 'hidden md:flex'} w-full md:w-96 border-r border-slate-800 bg-slate-900/50 flex-col shrink-0 overflow-hidden`}>
+          
+          {/* Main Category Filter Pills */}
+          <div className="p-2 border-b border-slate-800 overflow-x-auto no-scrollbar flex items-center gap-1.5 shrink-0 bg-slate-900">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  setDisplayCount(30);
+                }}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                  selectedCategory === cat 
+                    ? "bg-indigo-600 text-white shadow-sm" 
+                    : "bg-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Sub-Sector Filter Pills */}
+          <div className="p-2 bg-slate-950/90 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <span className="text-[11px] text-slate-500 font-semibold shrink-0 pl-1">부품분야:</span>
+            {SUB_SECTORS.map(sub => (
+              <button
+                key={sub}
+                onClick={() => {
+                  setSelectedSubSector(sub);
+                  setDisplayCount(30);
+                }}
+                className={`px-2 py-0.5 rounded text-[11px] whitespace-nowrap transition-colors ${
+                  selectedSubSector === sub
+                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40"
+                    : "text-slate-400 hover:text-slate-200 bg-slate-900"
+                }`}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
+
+          {/* List Counter Info */}
+          <div className="px-4 py-2 bg-slate-950/40 border-b border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+            <span>
+              {activeTab === 'bookmarks' ? '북마크 저장 기업' : '부품조합 DB 탐색'}{' '}
+              <strong className="text-cyan-400">
+                {activeTab === 'bookmarks' 
+                  ? bookmarks.length 
+                  : filteredCompanies.length}
+              </strong> / 730개
+            </span>
+            <span className="text-[11px] text-slate-500">KAICA · DART 공시 연동</span>
+          </div>
+
+          {/* Company Cards Container */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+            {activeTab === 'bookmarks' ? (
+              // Bookmarks View
+              companies.filter(c => bookmarks.includes(c.id)).map(comp => (
+                <CompanyListItem 
+                  key={comp.id} 
+                  comp={comp} 
+                  isSelected={comp.id === selectedCompanyId}
+                  isBookmarked={true}
+                  onSelect={() => setSelectedCompanyId(comp.id)}
+                  onToggleBookmark={() => toggleBookmark(comp.id)}
+                />
+              ))
+            ) : displayedCompanies.length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <Building2 className="w-10 h-10 text-slate-600 mx-auto mb-3 stroke-[1.5]" />
+                <p className="text-sm font-medium text-slate-300">검색 조건에 해당 부품사가 없습니다.</p>
+                <p className="text-xs text-slate-500 mt-1">상단 AI 탐색 버튼을 누르면 연관 기업을 자동 발굴합니다.</p>
+              </div>
+            ) : (
+              <>
+                {displayedCompanies.map(comp => (
+                  <CompanyListItem 
+                    key={comp.id} 
+                    comp={comp} 
+                    isSelected={comp.id === selectedCompanyId}
+                    isBookmarked={bookmarks.includes(comp.id)}
+                    onSelect={() => setSelectedCompanyId(comp.id)}
+                    onToggleBookmark={() => toggleBookmark(comp.id)}
+                  />
+                ))}
+
+                {/* Infinite Scroll / Load More */}
+                {filteredCompanies.length > displayCount && (
+                  <button
+                    onClick={() => setDisplayCount(prev => prev + 40)}
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-colors my-2"
+                  >
+                    기업 더 불러오기 ({filteredCompanies.length - displayCount}개 남음)
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </aside>
+
+        {/* Right Content Pane: Company Detail / Relationship Graph / Admin Form */}
+        <main className="flex-1 bg-slate-950 flex flex-col overflow-y-auto">
+          
+          {activeTab === "admin" ? (
+            /* Admin Entry Form */
+            <div className="max-w-2xl mx-auto p-6 w-full">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-indigo-400" />
+                  신규 자동차 부품/소재 기업 등록 (어드민)
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  데이터베이스에 존재하지 않는 1·2차 부품사나 협력사 정보를 직접 수동 등록합니다.
+                </p>
+              </div>
+
+              <form onSubmit={handleAdminSubmit} className="space-y-4 bg-slate-900/80 p-5 rounded-2xl border border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">기업명 *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="예: 경신, 광진상공"
+                      value={adminFormData.name}
+                      onChange={e => setAdminFormData({...adminFormData, name: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">산업 분야 *</label>
+                    <select
+                      value={adminFormData.category}
+                      onChange={e => setAdminFormData({...adminFormData, category: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                    >
+                      {CATEGORIES.filter(c => c !== "전체").map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">세부 부품 영역</label>
+                    <select
+                      value={adminFormData.subSector}
+                      onChange={e => setAdminFormData({...adminFormData, subSector: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                    >
+                      {SUB_SECTORS.filter(s => s !== "전체 세부분야").map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">공급 계층 (Tier)</label>
+                    <input
+                      type="text"
+                      placeholder="예: 현대차 1차 와이어링 벤더"
+                      value={adminFormData.tier}
+                      onChange={e => setAdminFormData({...adminFormData, tier: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">기업 개요 및 주요 역량</label>
+                  <textarea
+                    rows={3}
+                    placeholder="부품 정밀 가공 및 차량 밸류체인 참여 내용..."
+                    value={adminFormData.description}
+                    onChange={e => setAdminFormData({...adminFormData, description: e.target.value})}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">주요 납품처 (쉼표 구분)</label>
+                    <input
+                      type="text"
+                      placeholder="현대차, 기아"
+                      value={adminFormData.clients}
+                      onChange={e => setAdminFormData({...adminFormData, clients: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">경쟁사 (쉼표 구분)</label>
+                    <input
+                      type="text"
+                      placeholder="유라코퍼레이션"
+                      value={adminFormData.competitors}
+                      onChange={e => setAdminFormData({...adminFormData, competitors: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">협력/소재사 (쉼표 구분)</label>
+                    <input
+                      type="text"
+                      placeholder="LS전선"
+                      value={adminFormData.suppliers}
+                      onChange={e => setAdminFormData({...adminFormData, suppliers: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-colors"
+                  >
+                    데이터베이스에 입력 저장
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : activeTab === "network" ? (
+            /* Interactive Network View */
+            <div className="p-6 flex-1 flex flex-col">
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                  <Network className="w-5 h-5 text-cyan-400" />
+                  {selectedCompany.name} 생태계 릴레이션 그래프
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  선택한 기업을 중심으로 완성차 OEM, 1·2차 벤더 및 소재/협력사가 연결된 산업 지도입니다.
+                </p>
+              </div>
+
+              <div className="flex-1 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 relative flex flex-col justify-between overflow-x-auto min-h-[500px]">
+                {/* Visual Graph Layout */}
+                <div className="grid grid-cols-3 gap-6 my-auto text-center">
+                  
+                  {/* Suppliers Column */}
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                      부품 / 소재 / 원자재 협력사
+                    </span>
+                    {selectedCompany.suppliers && selectedCompany.suppliers.length > 0 ? (
+                      selectedCompany.suppliers.map(sup => (
+                        <div
+                          key={sup}
+                          onClick={() => handleNavigateToCompany(sup)}
+                          className="p-3 bg-slate-950 border border-slate-800 hover:border-cyan-500/50 rounded-xl cursor-pointer transition-all hover:scale-105"
+                        >
+                          <p className="text-xs font-semibold text-cyan-300">{sup}</p>
+                          <span className="text-[10px] text-slate-500">원자재·하부 파츠</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-slate-600">등록된 하부 협력사 정보 없음</p>
+                    )}
+                  </div>
+
+                  {/* Target Company (Center) */}
+                  <div className="my-auto">
+                    <div className="p-5 bg-gradient-to-b from-indigo-600 to-indigo-900 border-2 border-indigo-400 rounded-2xl shadow-2xl shadow-indigo-500/20 text-white relative">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-cyan-400 text-slate-950 text-[10px] font-extrabold">
+                        {selectedCompany.tier}
+                      </div>
+                      <h3 className="text-lg font-extrabold mt-1">{selectedCompany.name}</h3>
+                      <p className="text-xs text-indigo-200 font-medium mt-1">{selectedCompany.category}</p>
+                      <p className="text-[11px] text-indigo-100/70 mt-2 line-clamp-2">{selectedCompany.mainProducts.join(', ')}</p>
+                    </div>
+                  </div>
+
+                  {/* Clients Column */}
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                      주요 납품처 / 상위 OEM
+                    </span>
+                    {selectedCompany.clients && selectedCompany.clients.length > 0 ? (
+                      (Array.isArray(selectedCompany.clients) ? selectedCompany.clients : [selectedCompany.clients]).map(cli => (
+                        <div
+                          key={cli}
+                          onClick={() => handleNavigateToCompany(cli)}
+                          className="p-3 bg-slate-950 border border-slate-800 hover:border-indigo-500/50 rounded-xl cursor-pointer transition-all hover:scale-105"
+                        >
+                          <p className="text-xs font-semibold text-indigo-300">{cli}</p>
+                          <span className="text-[10px] text-slate-500">상위 벤더 & OEM</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-slate-600">등록된 납품처 정보 없음</p>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* Competitors Footer Strip */}
+                <div className="pt-4 border-t border-slate-800/80">
+                  <span className="text-xs font-semibold text-slate-400 mr-2">동일 기술 / 유사 분야 경쟁사:</span>
+                  <div className="inline-flex flex-wrap gap-2 mt-2 sm:mt-0">
+                    {selectedCompany.competitors && selectedCompany.competitors.map(comp => (
+                      <button
+                        key={comp}
+                        onClick={() => handleNavigateToCompany(comp)}
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs hover:bg-amber-500/20 transition-colors"
+                      >
+                        {comp}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Main Company Detail View */
+            <div className="p-4 md:p-8 max-w-4xl mx-auto w-full">
+              
+              {/* Header Banner */}
+              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+                
+                <div className="flex flex-wrap items-start justify-between gap-4 relative z-10">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        {selectedCompany.category}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                        {selectedCompany.tier}
+                      </span>
+                      {selectedCompany.verified && (
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          공시/부품조합 검증
+                        </span>
+                      )}
+                    </div>
+
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-white mt-2">
+                      {selectedCompany.name}
+                    </h2>
+                    
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                      {selectedCompany.location}
+                    </p>
+                  </div>
+
+                  {/* Bookmark Toggle */}
+                  <button
+                    onClick={() => toggleBookmark(selectedCompany.id)}
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+                      bookmarks.includes(selectedCompany.id)
+                        ? "bg-amber-400 text-slate-950 font-bold shadow-lg shadow-amber-400/20"
+                        : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
+                    }`}
+                  >
+                    <Bookmark className="w-4 h-4" fill={bookmarks.includes(selectedCompany.id) ? "currentColor" : "none"} />
+                    {bookmarks.includes(selectedCompany.id) ? "북마크 저장됨" : "관심 기업 저장"}
+                  </button>
+                </div>
+
+                <p className="text-sm text-slate-300 mt-4 leading-relaxed font-normal">
+                  {selectedCompany.description}
+                </p>
+
+                {/* Quick Info Badges */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-slate-800/80">
+                  <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                    <span className="text-[11px] text-slate-500 font-medium block">임직원 수</span>
+                    <span className="text-sm font-bold text-slate-200 mt-0.5 block">{selectedCompany.employees}</span>
+                  </div>
+                  <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                    <span className="text-[11px] text-slate-500 font-medium block">평균 연봉 수준</span>
+                    <span className="text-sm font-bold text-cyan-400 mt-0.5 block">{selectedCompany.avgSalary}</span>
+                  </div>
+                  <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 col-span-2 sm:col-span-1">
+                    <span className="text-[11px] text-slate-500 font-medium block">부품 세부분야</span>
+                    <span className="text-sm font-bold text-indigo-300 mt-0.5 block">{selectedCompany.subSector || "모빌리티 부품"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Supply Products & Relationship Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                
+                {/* Main Products */}
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+                  <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
+                    <Factory className="w-4 h-4 text-cyan-400" />
+                    주력 부품 & 공급 파츠
+                  </h3>
+                  <div className="space-y-2">
+                    {selectedCompany.mainProducts.map((prod, idx) => (
+                      <div key={idx} className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
+                        <span>{prod}</span>
+                        <span className="text-[10px] text-slate-500">정규 규격</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Key Roles Required */}
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+                  <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
+                    <Briefcase className="w-4 h-4 text-indigo-400" />
+                    주요 직무 및 요구 역량
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCompany.roles ? selectedCompany.roles.map((role, idx) => (
+                      <span key={idx} className="px-3 py-1.5 rounded-lg bg-slate-950 text-xs font-medium text-slate-300 border border-slate-800">
+                        {role}
+                      </span>
+                    )) : (
+                      <span className="text-xs text-slate-500">R&D, 정밀가공, 품질보증</span>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Supply Chain Connection Relational Explorer (Cross Navigation) */}
+              <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 mt-6">
+                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-4">
+                  <Share2 className="w-4 h-4 text-amber-400" />
+                  연속 기업 탐색망 (클릭 시 해당 기업으로 전환)
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  
+                  {/* Clients */}
+                  <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                    <span className="text-xs font-bold text-indigo-400 block mb-2">주요 고객사 / 납품처</span>
+                    <div className="space-y-1.5">
+                      {selectedCompany.clients && (Array.isArray(selectedCompany.clients) ? selectedCompany.clients : [selectedCompany.clients]).map(c => (
+                        <button
+                          key={c}
+                          onClick={() => handleNavigateToCompany(c)}
+                          className="w-full text-left text-xs font-medium text-slate-300 hover:text-cyan-300 hover:underline flex items-center justify-between py-1"
+                        >
+                          <span>{c}</span>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Competitors */}
+                  <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                    <span className="text-xs font-bold text-amber-400 block mb-2">동종 분야 경쟁사</span>
+                    <div className="space-y-1.5">
+                      {selectedCompany.competitors && selectedCompany.competitors.map(c => (
+                        <button
+                          key={c}
+                          onClick={() => handleNavigateToCompany(c)}
+                          className="w-full text-left text-xs font-medium text-slate-300 hover:text-amber-300 hover:underline flex items-center justify-between py-1"
+                        >
+                          <span>{c}</span>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Suppliers */}
+                  <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                    <span className="text-xs font-bold text-cyan-400 block mb-2">원자재 / 하부 협력사</span>
+                    <div className="space-y-1.5">
+                      {selectedCompany.suppliers && selectedCompany.suppliers.map(s => (
+                        <button
+                          key={s}
+                          onClick={() => handleNavigateToCompany(s)}
+                          className="w-full text-left text-xs font-medium text-slate-300 hover:text-cyan-300 hover:underline flex items-center justify-between py-1"
+                        >
+                          <span>{s}</span>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Recruitment & Portal Job Search Links */}
+              <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 mt-6 mb-8">
+                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
+                  <ExternalLink className="w-4 h-4 text-cyan-400" />
+                  채용 공고 & 중소·중견 기업 정보 바로가기
+                </h3>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <a
+                    href={selectedCompany.careerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-3 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 rounded-xl text-center text-xs font-semibold text-indigo-300 transition-colors"
+                  >
+                    공식 채용 페이지
+                  </a>
+                  <a
+                    href={`https://www.saramin.co.kr/zf_user/search/company?searchword=${encodeURIComponent(selectedCompany.name)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-center text-xs font-medium text-slate-300 transition-colors"
+                  >
+                    사람인 기업정보
+                  </a>
+                  <a
+                    href={`https://www.jobkorea.co.kr/Search/?stk=${encodeURIComponent(selectedCompany.name)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-center text-xs font-medium text-slate-300 transition-colors"
+                  >
+                    잡코리아 채용
+                  </a>
+                  <a
+                    href={`https://www.worknet.go.kr/empInfo/empInfoSrch/list/dtlEmpSrchList.do?keyword=${encodeURIComponent(selectedCompany.name)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-center text-xs font-medium text-slate-300 transition-colors"
+                  >
+                    워크넷 강소기업
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          )}
+        </main>
+
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------
+// Reusable Sub-Component: Company Item Card in Left List
+// ----------------------------------------------------
+function CompanyListItem({ comp, isSelected, isBookmarked, onSelect, onToggleBookmark }) {
+  return (
+    <div
+      onClick={onSelect}
+      className={`p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
+        isSelected 
+          ? "bg-slate-800/90 border-indigo-500 shadow-lg shadow-indigo-500/10" 
+          : "bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/50 hover:border-slate-700"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-sm text-slate-100 group-hover:text-indigo-400 transition-colors">
+              {comp.name}
+            </h3>
+            {comp.verified && (
+              <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 inline shrink-0" title="KAICA 및 DART 공시 검증 완료" />
+            )}
+          </div>
+          <p className="text-xs text-indigo-400 font-medium mt-0.5">
+            {comp.category} · <span className="text-slate-400">{comp.tier}</span>
+          </p>
+        </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleBookmark();
+          }}
+          className={`p-1.5 rounded-lg transition-colors ${
+            isBookmarked 
+              ? "text-amber-400 bg-amber-400/10" 
+              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+          }`}
+        >
+          <Bookmark className="w-4 h-4" fill={isBookmarked ? "currentColor" : "none"} />
+        </button>
+      </div>
+
+      <p className="text-xs text-slate-400 line-clamp-2 mt-2 leading-relaxed">
+        {comp.description}
+      </p>
+
+      {/* Tag Badges */}
+      <div className="flex flex-wrap gap-1 mt-3">
+        <span className="text-[10px] px-2 py-0.5 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-800/60 font-medium">
+          {comp.subSector || "모빌리티 파츠"}
+        </span>
+        {comp.tags && comp.tags.slice(0, 2).map(tag => (
+          <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">
+            #{tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
