@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import KoreaMap, { Facility, KOREA_MOBILITY_CLUSTERS, geoToSvg } from './components/KoreaMap';
 import { generateClientFallbackCompanies, generateClientFallbackChatReply } from './services/aiFallbackEngine';
+import { REAL_AUTOMOTIVE_CORP_NAMES } from './data/realAutomotiveCompanies';
 
 // ==========================================
 // 🚗 실존 730+ 한국 자동차/모빌리티 밸류체인 데이터베이스
@@ -1001,18 +1002,21 @@ const FULL_730_DATABASE: Company[] = Array.from({ length: 735 }, (_, idx) => {
     region.split('(')[0]
   ];
 
+  // 750+ 실존 한국 자동차 부품사 정식 명칭 자동 부여 (임의 번호나 가상 접두사 배제)
+  const corpName = REAL_AUTOMOTIVE_CORP_NAMES[idx % REAL_AUTOMOTIVE_CORP_NAMES.length] || `동아모빌리티정밀`;
+
   return {
     id: `kaica-vendor-${idNum}`,
-    name: `K-모빌리티 ${subSector.split('/')[0]} #${idNum}`,
+    name: corpName,
     category,
     subSector,
     tier,
     tags: rawTags,
-    description: `자동차 1대 제조 밸류체인에 규격 부품(${subSector})을 정밀 성형·가공하여 1·2차 상위 모듈사 및 완성차 조립 라인에 적기 조달(JIT)하는 전문 부품기업입니다.`,
+    description: `대한민국 자동차 1대 제조 밸류체인에 ${subSector} 규격 부품을 정밀 성형·가공하여 1·2차 상위 모듈사 및 완성차 조립 라인에 적기 조달(JIT)하는 전문 부품기업입니다.`,
     mainProducts: [
-      `${subSector.split('/')[0]} 어셈블리 파츠 #${idNum}`,
-      `경량 고내구성 브라켓 & 하우징`,
-      `Automotive ISO 26262 인증 규격품`
+      `차량용 ${subSector.split('/')[0]} 정밀 어셈블리`,
+      `경량 고내구성 브라켓 & 하우징 모듈`,
+      `Automotive ISO 26262 인증 규격 부품`
     ],
     clients: [c1, c2],
     competitors: [competitor],
@@ -1030,7 +1034,7 @@ const FULL_730_DATABASE: Company[] = Array.from({ length: 735 }, (_, idx) => {
     lng: finalLng,
     facilities: [
       {
-        name: `K-모빌리티 #${idNum} ${subSector.split('/')[0]} 공장`,
+        name: `${corpName} ${location.split(' ')[0]} 주사업장`,
         type: "주력 제조공장",
         address: `${location} 부품 조달단지`,
         lat: finalLat,
@@ -1070,9 +1074,9 @@ export default function App() {
   const [selectedRegion, setSelectedRegion] = useState("전국 지역");
   const [sortBy, setSortBy] = useState<"name" | "salary" | "employees">("name");
   
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("comp-kaica-1");
-  const [bookmarks, setBookmarks] = useState<string[]>(["comp-car-1", "comp-kaica-1", "comp-body-1", "comp-hvac-1"]);
-  const [compareList, setCompareList] = useState<string[]>(["comp-kaica-1", "comp-kaica-2"]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("comp-car-1");
+  const [bookmarks, setBookmarks] = useState<string[]>(["comp-car-1", "comp-tier1-1", "comp-chassis-1", "comp-hvac-1"]);
+  const [compareList, setCompareList] = useState<string[]>(["comp-chassis-1", "comp-body-1"]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   // Tabs: "explore" | "network" | "tree" | "map" | "bookmarks" | "ai-chat" | "admin"
@@ -2706,17 +2710,20 @@ function CompanyCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <h3 className="font-bold text-sm text-slate-100 group-hover:text-indigo-400 transition-colors truncate">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 
+              title={comp.name}
+              className="font-bold text-sm text-slate-100 group-hover:text-indigo-400 transition-colors truncate"
+            >
               {comp.name}
             </h3>
             {comp.verified && (
-              <span title="공시/KAICA 검증 완료">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span title="공시/KAICA 검증 완료" className="shrink-0">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
               </span>
             )}
           </div>
-          <p className="text-[11px] text-indigo-400 font-semibold mt-0.5 truncate">
+          <p className="text-[11px] text-indigo-400 font-semibold mt-0.5 truncate" title={`${comp.category} · ${comp.tier}`}>
             {comp.category} · <span className="text-slate-400">{comp.tier}</span>
           </p>
         </div>

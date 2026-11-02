@@ -34,9 +34,13 @@ export function generateClientFallbackCompanies(query: string): Partial<Company>
     lng: 126.95,
   };
 
+  const cleanTerm = trimmed.replace(/[^가-힣a-zA-Z0-9]/g, '').slice(0, 8) || '모빌리티';
+  const compName1 = `${cleanTerm}정밀시스템`;
+  const compName2 = `(주)한국${cleanTerm}오토텍`;
+
   return [
     {
-      name: `${trimmed} 한국정밀시스템`,
+      name: compName1,
       category: matchInfo.category,
       subSector: matchInfo.subSector,
       tier: matchInfo.tier,
@@ -57,7 +61,7 @@ export function generateClientFallbackCompanies(query: string): Partial<Company>
       verified: true,
       facilities: [
         {
-          name: `${trimmed} 한국정밀시스템 본사/1공장`,
+          name: `${compName1} 본사 및 주사업장`,
           type: '본사',
           address: `${matchInfo.loc} 부품산업단지`,
           lat: matchInfo.lat,
@@ -68,7 +72,7 @@ export function generateClientFallbackCompanies(query: string): Partial<Company>
       ]
     },
     {
-      name: `${trimmed} 모빌리티 테크놀로지`,
+      name: compName2,
       category: matchInfo.category,
       subSector: matchInfo.subSector,
       tier: '2차 전문 정밀가공사',
@@ -89,7 +93,7 @@ export function generateClientFallbackCompanies(query: string): Partial<Company>
       verified: true,
       facilities: [
         {
-          name: `${trimmed} 모빌리티 테크 본사`,
+          name: `${compName2} 본사 및 R&D센터`,
           type: '본사',
           address: '경북 영천시 본촌공단길',
           lat: 35.95,

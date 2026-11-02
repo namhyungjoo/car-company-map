@@ -111,9 +111,13 @@ export default async function handler(req: any, res: any) {
       loc: '충남 아산 / 경기 화성',
     };
 
+    const cleanTerm = trimmed.replace(/[^가-힣a-zA-Z0-9]/g, '').slice(0, 8) || '모빌리티';
+    const compName1 = `${cleanTerm}정밀시스템`;
+    const compName2 = `(주)한국${cleanTerm}오토텍`;
+
     const generatedCompanies = [
       {
-        name: `${trimmed} 한국정밀시스템`,
+        name: compName1,
         category: matchInfo.category,
         subSector: matchInfo.subSector,
         tier: matchInfo.tier,
@@ -130,7 +134,7 @@ export default async function handler(req: any, res: any) {
         roles: ['공정 엔지니어', 'CAE 해석', '품질기획'],
       },
       {
-        name: `${trimmed} 모빌리티 테크놀로지`,
+        name: compName2,
         category: matchInfo.category,
         subSector: matchInfo.subSector,
         tier: '2차 전문 정밀가공사',

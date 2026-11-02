@@ -81,9 +81,12 @@ app.post("/api/ai-expand", async (req, res) => {
     tier: "1\uCC28 \uADDC\uACA9 \uD30C\uCE20 \uBCA4\uB354",
     products: [`${trimmed} \uC815\uBC00 \uAC00\uACF5\uD488`, `${trimmed} \uC81C\uC5B4 \uBAA8\uB4C8`, "Automotive \uD45C\uC900 \uC5B4\uC148\uBE14\uB9AC"]
   };
+  const cleanTerm = trimmed.replace(/[^가-힣a-zA-Z0-9]/g, "").slice(0, 8) || "\uBAA8\uBE4C\uB9AC\uD2F0";
+  const compName1 = `${cleanTerm}\uC815\uBC00\uC2DC\uC2A4\uD15C`;
+  const compName2 = `(\uC8FC)\uD55C\uAD6D${cleanTerm}\uC624\uD1A0\uD14D`;
   const generatedCompanies = [
     {
-      name: `${trimmed} \uD55C\uAD6D\uC815\uBC00\uC2DC\uC2A4\uD15C`,
+      name: compName1,
       category: matchInfo.category,
       subSector: matchInfo.subSector,
       tier: matchInfo.tier,
@@ -100,7 +103,7 @@ app.post("/api/ai-expand", async (req, res) => {
       roles: ["\uACF5\uC815 \uC5D4\uC9C0\uB2C8\uC5B4", "CAE \uD574\uC11D", "\uD488\uC9C8\uAE30\uD68D"]
     },
     {
-      name: `${trimmed} \uBAA8\uBE4C\uB9AC\uD2F0 \uD14C\uD06C\uB180\uB85C\uC9C0`,
+      name: compName2,
       category: matchInfo.category,
       subSector: matchInfo.subSector,
       tier: "2\uCC28 \uC804\uBB38 \uC815\uBC00\uAC00\uACF5\uC0AC",

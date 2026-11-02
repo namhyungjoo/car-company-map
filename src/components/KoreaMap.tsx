@@ -456,28 +456,38 @@ export default function KoreaMap({ company, onSelectClusterRegion, interactive =
                   />
 
                   {/* Marker Floating Label */}
-                  <g transform={`translate(${pos.x + 12}, ${pos.y - 10})`}>
-                    <rect
-                      x="0"
-                      y="-12"
-                      width={Math.max(fac.name.length * 11, 80)}
-                      height="20"
-                      rx="6"
-                      fill="#020617"
-                      fillOpacity="0.9"
-                      stroke={isSelected ? "#38bdf8" : "#334155"}
-                      strokeWidth="1"
-                    />
-                    <text
-                      x="8"
-                      y="2"
-                      fill={isSelected ? "#38bdf8" : "#e2e8f0"}
-                      fontSize="9.5"
-                      fontWeight="700"
-                    >
-                      {fac.name}
-                    </text>
-                  </g>
+                  {(() => {
+                    const labelText = fac.name.length > 20 ? fac.name.slice(0, 19) + '…' : fac.name;
+                    const approxWidth = Math.max(labelText.length * 10 + 16, 80);
+                    const isRightEdge = pos.x > 330;
+                    const translateX = isRightEdge ? pos.x - approxWidth - 10 : pos.x + 12;
+                    const translateY = pos.y < 35 ? pos.y + 16 : pos.y - 8;
+
+                    return (
+                      <g transform={`translate(${translateX}, ${translateY})`}>
+                        <rect
+                          x="0"
+                          y="-12"
+                          width={approxWidth}
+                          height="22"
+                          rx="6"
+                          fill="#020617"
+                          fillOpacity="0.95"
+                          stroke={isSelected ? "#38bdf8" : "#334155"}
+                          strokeWidth={isSelected ? "1.5" : "1"}
+                        />
+                        <text
+                          x="8"
+                          y="3"
+                          fill={isSelected ? "#38bdf8" : "#e2e8f0"}
+                          fontSize="9.5"
+                          fontWeight="700"
+                        >
+                          {labelText}
+                        </text>
+                      </g>
+                    );
+                  })()}
                 </g>
               );
             })}
@@ -541,13 +551,14 @@ export default function KoreaMap({ company, onSelectClusterRegion, interactive =
                     <button
                       key={idx}
                       onClick={() => setSelectedFacilityIdx(idx)}
+                      title={fac.name}
                       className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                         idx === selectedFacilityIdx
                           ? 'bg-indigo-600 text-white shadow-sm'
                           : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
                       }`}
                     >
-                      {fac.name.split('(')[0].replace(company.name, '').trim() || fac.type}
+                      {fac.name.replace(company.name, '').replace(/^[\s\-_/]+/, '').trim() || fac.type || `사업장 ${idx + 1}`}
                     </button>
                   ))}
                 </div>
