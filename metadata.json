@@ -2,5 +2,7 @@
   "name": "K-모빌리티 밸류체인 맵",
   "description": "한국 자동차 700+ 부품·소재·SW 기업 공급망 및 관계도 탐색 맵",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
