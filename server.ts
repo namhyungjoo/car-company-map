@@ -78,69 +78,11 @@ app.post('/api/ai-expand', async (req: Request, res: Response) => {
       }
     } catch (apiError) {
       console.error('Gemini API call error:', apiError);
-      // fallback smoothly below
     }
   }
 
-  // Fallback heuristic database generation if API is unavailable
-  const fallbackSectors: Record<string, { subSector: string; category: string; tier: string; products: string[] }> = {
-    '배터리': { subSector: '배터리셀/팩', category: '배터리', tier: '2차 배터리 모듈/팩 벤더', products: ['BMS 모듈', '배터리 팩 프레임', '버스바'] },
-    '모터': { subSector: '변속기/파워트레인', category: '1차 부품사', tier: '1차 구동모터 벤더', products: ['EV 트랙션 모터', '구동 코어', '리졸버 센서'] },
-    '반도체': { subSector: '차량용 반도체/MCU', category: '전장·SW', tier: '차량용 팹리스 파트너', products: ['MCU 칩셋', '파워반도체 SiC 모듈', '통신 트랜시버'] },
-    '자율주행': { subSector: '차량OS/임베디드SW', category: '자율주행', tier: 'ADAS Tier-1 솔루션사', products: ['ADAS 센서퓨전 모듈', '서라운드 뷰 카메라', '차량 제어 ECU'] },
-    '도어': { subSector: '도어/창문/메커니즘', category: '1차 부품사', tier: '1차 도어시스템 벤더', products: ['전동 도어 래치', '파워 테일게이트', '윈도우 모터'] },
-  };
-
-  const keyMatch = Object.keys(fallbackSectors).find(k => trimmed.includes(k)) || '모터';
-  const matchInfo = fallbackSectors[keyMatch] || {
-    subSector: '섀시/서스펜션',
-    category: '1차 부품사',
-    tier: '1차 규격 파츠 벤더',
-    products: [`${trimmed} 정밀 가공품`, `${trimmed} 제어 모듈`, 'Automotive 표준 어셈블리'],
-  };
-
-  const cleanTerm = trimmed.replace(/[^가-힣a-zA-Z0-9]/g, '').slice(0, 8) || '모빌리티';
-  const compName1 = `${cleanTerm}정밀시스템`;
-  const compName2 = `(주)한국${cleanTerm}오토텍`;
-
-  const generatedCompanies = [
-    {
-      name: compName1,
-      category: matchInfo.category,
-      subSector: matchInfo.subSector,
-      tier: matchInfo.tier,
-      tags: [trimmed, '신규발굴', '국내조달', 'KAICA'],
-      description: `${trimmed} 분야에서 독자적 금형 및 정밀 양산 라인을 보유한 중견 부품사로 현대차·기아 및 Tier-1 글로벌 서플라이 체인에 직납합니다.`,
-      mainProducts: matchInfo.products,
-      clients: ['현대자동차', '현대모비스', '기아'],
-      competitors: ['화신', '성우하이텍'],
-      suppliers: ['포스코', '한국단자공업'],
-      location: '충남 아산 / 경기 평택',
-      employees: '620명',
-      avgSalary: '6,800만원',
-      careerUrl: 'https://www.kaica.or.kr',
-      roles: ['공정 엔지니어', 'CAE 해석', '품질기획'],
-    },
-    {
-      name: compName2,
-      category: matchInfo.category,
-      subSector: matchInfo.subSector,
-      tier: '2차 전문 정밀가공사',
-      tags: [trimmed, '친환경차', '차세대', 'R&D'],
-      description: `차세대 EV 및 SDV 플랫폼에 적용되는 경량화 및 고내구성 ${trimmed} 모듈을 개발하여 1차 협력사에 안정적으로 공급하는 전문 기업입니다.`,
-      mainProducts: [`차세대 ${trimmed} 링크`, '센서 통합형 브라켓', '초고장력 파츠'],
-      clients: ['HL만도', '한온시스템'],
-      competitors: ['경신', '대동도어'],
-      suppliers: ['현대제철'],
-      location: '경북 영천 / 대구 달서구',
-      employees: '430명',
-      avgSalary: '6,400만원',
-      careerUrl: 'https://www.kaica.or.kr',
-      roles: ['회로 설계', '생산 설비 관리', '신뢰성 시험'],
-    },
-  ];
-
-  res.json({ companies: generatedCompanies, source: 'fallback' });
+  // 실존하지 않는 가상 회사 임의 합성을 차단하고 안전하게 빈 배열 반환
+  res.json({ companies: [], source: 'fallback' });
 });
 
 // POST /api/ai-chat: 밸류체인 질의응답 분석기

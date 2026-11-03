@@ -67,60 +67,7 @@ app.post("/api/ai-expand", async (req, res) => {
       console.error("Gemini API call error:", apiError);
     }
   }
-  const fallbackSectors = {
-    "\uBC30\uD130\uB9AC": { subSector: "\uBC30\uD130\uB9AC\uC140/\uD329", category: "\uBC30\uD130\uB9AC", tier: "2\uCC28 \uBC30\uD130\uB9AC \uBAA8\uB4C8/\uD329 \uBCA4\uB354", products: ["BMS \uBAA8\uB4C8", "\uBC30\uD130\uB9AC \uD329 \uD504\uB808\uC784", "\uBC84\uC2A4\uBC14"] },
-    "\uBAA8\uD130": { subSector: "\uBCC0\uC18D\uAE30/\uD30C\uC6CC\uD2B8\uB808\uC778", category: "1\uCC28 \uBD80\uD488\uC0AC", tier: "1\uCC28 \uAD6C\uB3D9\uBAA8\uD130 \uBCA4\uB354", products: ["EV \uD2B8\uB799\uC158 \uBAA8\uD130", "\uAD6C\uB3D9 \uCF54\uC5B4", "\uB9AC\uC878\uBC84 \uC13C\uC11C"] },
-    "\uBC18\uB3C4\uCCB4": { subSector: "\uCC28\uB7C9\uC6A9 \uBC18\uB3C4\uCCB4/MCU", category: "\uC804\uC7A5\xB7SW", tier: "\uCC28\uB7C9\uC6A9 \uD339\uB9AC\uC2A4 \uD30C\uD2B8\uB108", products: ["MCU \uCE69\uC14B", "\uD30C\uC6CC\uBC18\uB3C4\uCCB4 SiC \uBAA8\uB4C8", "\uD1B5\uC2E0 \uD2B8\uB79C\uC2DC\uBC84"] },
-    "\uC790\uC728\uC8FC\uD589": { subSector: "\uCC28\uB7C9OS/\uC784\uBCA0\uB514\uB4DCSW", category: "\uC790\uC728\uC8FC\uD589", tier: "ADAS Tier-1 \uC194\uB8E8\uC158\uC0AC", products: ["ADAS \uC13C\uC11C\uD4E8\uC804 \uBAA8\uB4C8", "\uC11C\uB77C\uC6B4\uB4DC \uBDF0 \uCE74\uBA54\uB77C", "\uCC28\uB7C9 \uC81C\uC5B4 ECU"] },
-    "\uB3C4\uC5B4": { subSector: "\uB3C4\uC5B4/\uCC3D\uBB38/\uBA54\uCEE4\uB2C8\uC998", category: "1\uCC28 \uBD80\uD488\uC0AC", tier: "1\uCC28 \uB3C4\uC5B4\uC2DC\uC2A4\uD15C \uBCA4\uB354", products: ["\uC804\uB3D9 \uB3C4\uC5B4 \uB798\uCE58", "\uD30C\uC6CC \uD14C\uC77C\uAC8C\uC774\uD2B8", "\uC708\uB3C4\uC6B0 \uBAA8\uD130"] }
-  };
-  const keyMatch = Object.keys(fallbackSectors).find((k) => trimmed.includes(k)) || "\uBAA8\uD130";
-  const matchInfo = fallbackSectors[keyMatch] || {
-    subSector: "\uC100\uC2DC/\uC11C\uC2A4\uD39C\uC158",
-    category: "1\uCC28 \uBD80\uD488\uC0AC",
-    tier: "1\uCC28 \uADDC\uACA9 \uD30C\uCE20 \uBCA4\uB354",
-    products: [`${trimmed} \uC815\uBC00 \uAC00\uACF5\uD488`, `${trimmed} \uC81C\uC5B4 \uBAA8\uB4C8`, "Automotive \uD45C\uC900 \uC5B4\uC148\uBE14\uB9AC"]
-  };
-  const cleanTerm = trimmed.replace(/[^가-힣a-zA-Z0-9]/g, "").slice(0, 8) || "\uBAA8\uBE4C\uB9AC\uD2F0";
-  const compName1 = `${cleanTerm}\uC815\uBC00\uC2DC\uC2A4\uD15C`;
-  const compName2 = `(\uC8FC)\uD55C\uAD6D${cleanTerm}\uC624\uD1A0\uD14D`;
-  const generatedCompanies = [
-    {
-      name: compName1,
-      category: matchInfo.category,
-      subSector: matchInfo.subSector,
-      tier: matchInfo.tier,
-      tags: [trimmed, "\uC2E0\uADDC\uBC1C\uAD74", "\uAD6D\uB0B4\uC870\uB2EC", "KAICA"],
-      description: `${trimmed} \uBD84\uC57C\uC5D0\uC11C \uB3C5\uC790\uC801 \uAE08\uD615 \uBC0F \uC815\uBC00 \uC591\uC0B0 \uB77C\uC778\uC744 \uBCF4\uC720\uD55C \uC911\uACAC \uBD80\uD488\uC0AC\uB85C \uD604\uB300\uCC28\xB7\uAE30\uC544 \uBC0F Tier-1 \uAE00\uB85C\uBC8C \uC11C\uD50C\uB77C\uC774 \uCCB4\uC778\uC5D0 \uC9C1\uB0A9\uD569\uB2C8\uB2E4.`,
-      mainProducts: matchInfo.products,
-      clients: ["\uD604\uB300\uC790\uB3D9\uCC28", "\uD604\uB300\uBAA8\uBE44\uC2A4", "\uAE30\uC544"],
-      competitors: ["\uD654\uC2E0", "\uC131\uC6B0\uD558\uC774\uD14D"],
-      suppliers: ["\uD3EC\uC2A4\uCF54", "\uD55C\uAD6D\uB2E8\uC790\uACF5\uC5C5"],
-      location: "\uCDA9\uB0A8 \uC544\uC0B0 / \uACBD\uAE30 \uD3C9\uD0DD",
-      employees: "620\uBA85",
-      avgSalary: "6,800\uB9CC\uC6D0",
-      careerUrl: "https://www.kaica.or.kr",
-      roles: ["\uACF5\uC815 \uC5D4\uC9C0\uB2C8\uC5B4", "CAE \uD574\uC11D", "\uD488\uC9C8\uAE30\uD68D"]
-    },
-    {
-      name: compName2,
-      category: matchInfo.category,
-      subSector: matchInfo.subSector,
-      tier: "2\uCC28 \uC804\uBB38 \uC815\uBC00\uAC00\uACF5\uC0AC",
-      tags: [trimmed, "\uCE5C\uD658\uACBD\uCC28", "\uCC28\uC138\uB300", "R&D"],
-      description: `\uCC28\uC138\uB300 EV \uBC0F SDV \uD50C\uB7AB\uD3FC\uC5D0 \uC801\uC6A9\uB418\uB294 \uACBD\uB7C9\uD654 \uBC0F \uACE0\uB0B4\uAD6C\uC131 ${trimmed} \uBAA8\uB4C8\uC744 \uAC1C\uBC1C\uD558\uC5EC 1\uCC28 \uD611\uB825\uC0AC\uC5D0 \uC548\uC815\uC801\uC73C\uB85C \uACF5\uAE09\uD558\uB294 \uC804\uBB38 \uAE30\uC5C5\uC785\uB2C8\uB2E4.`,
-      mainProducts: [`\uCC28\uC138\uB300 ${trimmed} \uB9C1\uD06C`, "\uC13C\uC11C \uD1B5\uD569\uD615 \uBE0C\uB77C\uCF13", "\uCD08\uACE0\uC7A5\uB825 \uD30C\uCE20"],
-      clients: ["HL\uB9CC\uB3C4", "\uD55C\uC628\uC2DC\uC2A4\uD15C"],
-      competitors: ["\uACBD\uC2E0", "\uB300\uB3D9\uB3C4\uC5B4"],
-      suppliers: ["\uD604\uB300\uC81C\uCCA0"],
-      location: "\uACBD\uBD81 \uC601\uCC9C / \uB300\uAD6C \uB2EC\uC11C\uAD6C",
-      employees: "430\uBA85",
-      avgSalary: "6,400\uB9CC\uC6D0",
-      careerUrl: "https://www.kaica.or.kr",
-      roles: ["\uD68C\uB85C \uC124\uACC4", "\uC0DD\uC0B0 \uC124\uBE44 \uAD00\uB9AC", "\uC2E0\uB8B0\uC131 \uC2DC\uD5D8"]
-    }
-  ];
-  res.json({ companies: generatedCompanies, source: "fallback" });
+  res.json({ companies: [], source: "fallback" });
 });
 app.post("/api/ai-chat", async (req, res) => {
   const { message, contextCompany } = req.body;
